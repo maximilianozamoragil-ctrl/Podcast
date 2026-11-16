@@ -30,10 +30,10 @@ const Hair: React.FC<{ look: CharacterLook; layer: "back" | "front" }> = ({
   const s = look.hairShade;
   if (look.hair === "bangs") {
     if (layer === "back") {
-      // bob that falls to the jaw
+      // short men's cut: back of the head only
       return (
         <path
-          d="M58 150 C55 70 100 42 150 42 C200 42 245 70 242 150 L246 238 C246 252 232 258 222 250 L216 200 L84 200 L78 250 C68 258 54 252 54 238 Z"
+          d="M60 160 C56 74 102 42 150 42 C198 42 244 74 240 160 L234 190 L66 190 Z"
           fill={s}
         />
       );
@@ -46,14 +46,15 @@ const Hair: React.FC<{ look: CharacterLook; layer: "back" | "front" }> = ({
           fill={c}
         />
         {/* straight fringe */}
+        {/* messy, textured fringe */}
         <path
-          d="M78 132 C80 96 110 84 150 84 C190 84 220 96 222 132 L222 138 L78 138 Z"
+          d="M74 128 C78 92 110 80 150 80 C192 80 222 94 226 126 L214 120 L206 140 L192 118 L178 136 L166 114 L152 134 L140 112 L126 132 L114 112 L100 134 L92 116 Z"
           fill={c}
         />
-        <path d="M100 138 L102 108 M128 138 L129 104 M156 138 L156 104 M184 138 L183 106 M206 138 L203 112" stroke={s} strokeWidth={3} strokeLinecap="round" opacity={0.5} />
-        {/* side locks */}
-        <path d="M62 140 C60 180 64 214 72 238 L86 236 C80 210 78 176 80 138 Z" fill={c} />
-        <path d="M238 140 C240 180 236 214 228 238 L214 236 C220 210 222 176 220 138 Z" fill={c} />
+        <path d="M120 96 L114 112 M150 92 L140 112 M180 96 L166 114 M204 104 L192 118" stroke={s} strokeWidth={3} strokeLinecap="round" opacity={0.5} />
+        {/* short sideburns */}
+        <path d="M63 140 L65 180 L76 180 L78 136 Z" fill={c} />
+        <path d="M237 140 L235 180 L224 180 L222 136 Z" fill={c} />
       </g>
     );
   }
