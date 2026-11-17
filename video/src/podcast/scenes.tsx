@@ -56,7 +56,7 @@ export const SCENES: Scene[] = [
           <Emoji e="🎙️" size={150} />
         </Pop>
         <Pop at={0.8} from="up">
-          <Title size={92}>VIDEO PODCAST</Title>
+          <Title size={92}>BIO-PODCAST</Title>
         </Pop>
         <Pop at={2.2} from="up">
           <Row gap={16}>
@@ -503,11 +503,11 @@ export const SCENES: Scene[] = [
     el: (
       <Col gap={20}>
         <Row gap={50}>
-          <Pop at={156.4}>
+          <Pop at={155.0}>
             <Emoji e="🌡️🌍🔥" size={120} />
           </Pop>
         </Row>
-        <Pop at={156.8} from="up">
+        <Pop at={155.4} from="up">
           <Title size={56}>Crisis climática actual</Title>
         </Pop>
         <Pop at={158.6} from="up">

@@ -7,10 +7,15 @@ FIX=[(None,'Varen','Valen'),(None,'Rajiv','Rashid'),(None,'Rajit','Rashid'),
  (22,'naves','nuggets'),(22,'ITYAS','Eat Just'),(23,'Singapore','Singapur'),
  (31,'de','E.'),(39,'lo',''),(39,'gran','logran'),(26,'vivieramos','viviéramos'),
  (56,'prometeora','prometedora'),(85,'Vogue','Vow'),(85,'albondia','albóndiga'),
- (54,'bioreactores','biorreactores'),(0,'Vídeo','Video')]
+ (54,'bioreactores','biorreactores'),(0,'Vídeo','Bio-podcast'),(0,'Podcast','')]
+# Replace the first N words of a segment with new words (timing spread evenly)
+PHRASES={46:(3,'Está bien esa visión')}
 words=[]
 for i,s in enumerate(tr['segments']):
     spk=SPK[cl[i]]
+    if i in PHRASES:
+        n,new=PHRASES[i]; old=s['words'][:n]; a,b=old[0]['s'],old[-1]['e']; nw=new.split()
+        s['words']=[{'w':' '+x,'s':a+(b-a)*k/len(nw),'e':a+(b-a)*(k+1)/len(nw),'p':1} for k,x in enumerate(nw)]+s['words'][n:]
     for w in s['words']:
         txt=w['w']; core=re.sub(r'^[\s¿¡]+|[\s.,;:?!]+$','',txt)
         for si,o,r in FIX:
