@@ -11,97 +11,103 @@ export type CharacterLook = {
   skinShade: string;
   shirt: string;
   shirtShade: string;
+  accent: string;
   outfit: Outfit;
 };
 
-export type Outfit = "hoodie" | "varsity" | "puffer";
+export type Outfit = "sparkle-hoodie" | "graphic-hoodie" | "tee-chain";
 
 const TORSO = "M40 420 C40 330 80 292 150 292 C220 292 260 330 260 420 Z";
 const Neck: React.FC<{ look: CharacterLook }> = ({ look }) => (
   <rect x={128} y={236} width={44} height={64} rx={18} fill={look.skinShade} />
 );
 
-// Streetwear outfits. Only the top ~100 units show above the desk, so the
-// recognisable details (hood, collar, chain, patches) sit near the neckline.
-const Outfit: React.FC<{ look: CharacterLook }> = ({ look }) => {
+// 4-point twinkle star
+const Star: React.FC<{ x: number; y: number; r: number; color: string; o: number }> = ({ x, y, r, color, o }) => (
+  <path
+    d={`M${x} ${y - r} Q${x + r * 0.18} ${y - r * 0.18} ${x + r} ${y} Q${x + r * 0.18} ${y + r * 0.18} ${x} ${y + r} Q${x - r * 0.18} ${y + r * 0.18} ${x - r} ${y} Q${x - r * 0.18} ${y - r * 0.18} ${x} ${y - r} Z`}
+    fill={color}
+    opacity={o}
+  />
+);
+
+const SPARKLES: Array<[number, number, number]> = [
+  [70, 380, 7], [92, 336, 9], [110, 404, 6], [196, 344, 8], [222, 392, 9], [240, 356, 6],
+  [182, 404, 7], [62, 352, 5], [214, 324, 5], [120, 360, 5], [178, 366, 5], [100, 312, 5],
+];
+
+const Hoodie: React.FC<{ look: CharacterLook; strings: string; children?: React.ReactNode }> = ({
+  look,
+  strings,
+  children,
+}) => {
   const c = look.shirt;
   const s = look.shirtShade;
-  if (look.outfit === "hoodie") {
-    return (
-      <g>
-        <path d={TORSO} fill={c} />
-        {/* seams from shoulder */}
-        <path d="M78 330 C84 360 86 390 86 420 M222 330 C216 360 214 390 214 420" stroke={s} strokeWidth={4} fill="none" opacity={0.7} />
-        {/* hood lying behind the neck */}
-        <path d="M84 312 C80 262 220 262 216 312 C206 330 94 330 84 312 Z" fill={s} />
-        <Neck look={look} />
-        {/* hood opening in front */}
-        <path d="M104 300 C120 334 180 334 196 300 C188 318 112 318 104 300 Z" fill={c} />
-        <path d="M104 300 C120 334 180 334 196 300" stroke={s} strokeWidth={5} fill="none" />
-        {/* drawstrings */}
-        <path d="M134 322 C132 342 134 362 130 384" stroke="#fff" strokeWidth={5} fill="none" strokeLinecap="round" />
-        <path d="M166 322 C168 342 166 362 170 384" stroke="#fff" strokeWidth={5} fill="none" strokeLinecap="round" />
-        <rect x={125} y={382} width={10} height={16} rx={3} fill="#cfcfd8" />
-        <rect x={165} y={382} width={10} height={16} rx={3} fill="#cfcfd8" />
-        {/* small chest logo */}
-        <circle cx={208} cy={360} r={12} fill="#fff" opacity={0.9} />
-        <path d="M201 360 L206 365 L215 354" stroke={s} strokeWidth={4} fill="none" strokeLinecap="round" />
-      </g>
-    );
-  }
-  if (look.outfit === "varsity") {
-    return (
-      <g>
-        {/* white tee underneath */}
-        <path d={TORSO} fill="#f4f1ea" />
-        {/* jacket body, open in the middle */}
-        <path d="M40 420 C40 330 80 296 128 294 L140 420 Z" fill={c} />
-        <path d="M260 420 C260 330 220 296 172 294 L160 420 Z" fill={c} />
-        {/* cream leather sleeves at the shoulders */}
-        <path d="M40 420 C40 352 56 318 86 304 C74 340 72 380 76 420 Z" fill="#f2e6cc" />
-        <path d="M260 420 C260 352 244 318 214 304 C226 340 228 380 224 420 Z" fill="#f2e6cc" />
-        <Neck look={look} />
-        {/* striped ribbed collar */}
-        <path d="M110 298 C124 290 128 300 140 330 L150 420" stroke={s} strokeWidth={14} fill="none" />
-        <path d="M190 298 C176 290 172 300 160 330 L150 420" stroke={s} strokeWidth={14} fill="none" />
-        <path d="M110 298 C124 290 128 300 140 330 L150 420" stroke="#f4f1ea" strokeWidth={4} fill="none" />
-        <path d="M190 298 C176 290 172 300 160 330 L150 420" stroke="#f4f1ea" strokeWidth={4} fill="none" />
-        {/* chest letter patch */}
-        <circle cx={100} cy={340} r={22} fill="#f2e6cc" />
-        <text x={100} y={351} textAnchor="middle" fontFamily="Nunito" fontWeight={900} fontSize={30} fill={s}>
-          {look.name[0]}
-        </text>
-        {/* snaps */}
-        <circle cx={132} cy={368} r={4} fill="#f2e6cc" />
-        <circle cx={134} cy={398} r={4} fill="#f2e6cc" />
-      </g>
-    );
-  }
-  // puffer vest over a black tee, with a chain
   return (
     <g>
-      <path d={TORSO} fill="#24242c" />
+      <path d={TORSO} fill={c} />
+      <path d="M78 330 C84 360 86 390 86 420 M222 330 C216 360 214 390 214 420" stroke={s} strokeWidth={4} fill="none" opacity={0.7} />
+      {/* hood lying behind the neck */}
+      <path d="M84 312 C80 262 220 262 216 312 C206 330 94 330 84 312 Z" fill={s} />
       <Neck look={look} />
-      {/* tee neckline */}
-      <path d="M124 296 C134 312 166 312 176 296" stroke="#3a3a46" strokeWidth={6} fill="none" />
-      {/* silver chain */}
-      <path d="M126 300 C128 344 172 344 174 300" stroke="#d9dde6" strokeWidth={5} strokeDasharray="6 4" fill="none" />
-      <circle cx={150} cy={338} r={7} fill="#d9dde6" />
-      {/* vest panels */}
-      <path d="M60 420 C60 350 86 306 120 300 L132 420 Z" fill={c} />
-      <path d="M240 420 C240 350 214 306 180 300 L168 420 Z" fill={c} />
-      {/* quilting */}
-      {[336, 366, 396].map((y) => (
-        <g key={y}>
-          <path d={`M${66 + (y - 336) * -0.1} ${y} Q96 ${y + 8} 126 ${y}`} stroke={s} strokeWidth={4} fill="none" />
-          <path d={`M174 ${y} Q204 ${y + 8} ${234 + (y - 336) * 0.1} ${y}`} stroke={s} strokeWidth={4} fill="none" />
-        </g>
-      ))}
-      {/* high collar */}
-      <path d="M112 300 C110 280 124 274 132 282 L134 306 Z" fill={s} />
-      <path d="M188 300 C190 280 176 274 168 282 L166 306 Z" fill={s} />
-      {/* zipper edges */}
-      <path d="M128 304 L134 420 M172 304 L166 420" stroke="#d9dde6" strokeWidth={3} />
+      {/* hood opening in front */}
+      <path d="M104 300 C120 334 180 334 196 300 C188 318 112 318 104 300 Z" fill={c} />
+      <path d="M104 300 C120 334 180 334 196 300" stroke={s} strokeWidth={5} fill="none" />
+      {children}
+      {/* drawstrings */}
+      <path d="M134 322 C132 342 134 362 130 384" stroke={strings} strokeWidth={5} fill="none" strokeLinecap="round" />
+      <path d="M166 322 C168 342 166 362 170 384" stroke={strings} strokeWidth={5} fill="none" strokeLinecap="round" />
+      <rect x={125} y={382} width={10} height={16} rx={3} fill="#d9dde6" />
+      <rect x={165} y={382} width={10} height={16} rx={3} fill="#d9dde6" />
+    </g>
+  );
+};
+
+// Streetwear outfits. Only the top ~100 units show above the desk, so the
+// recognisable details (hood, chain, prints, sparkles) sit near the neckline.
+const Outfit: React.FC<{ look: CharacterLook; time: number }> = ({ look, time }) => {
+  if (look.outfit === "sparkle-hoodie") {
+    // black hoodie with twinkling glitter
+    return (
+      <Hoodie look={look} strings={look.accent}>
+        {SPARKLES.map(([x, y, r], i) => {
+          const tw = 0.35 + 0.65 * Math.max(0, Math.sin(time * 3 + i * 1.7));
+          return <Star key={i} x={x} y={y} r={r * (1.0 + tw * 0.6)} color={i % 3 === 0 ? "#ffe08a" : "#e8ecf5"} o={tw} />;
+        })}
+      </Hoodie>
+    );
+  }
+  if (look.outfit === "graphic-hoodie") {
+    // heather grey hoodie with a bold chest print
+    return (
+      <Hoodie look={look} strings={look.accent}>
+        {/* heather texture */}
+        {[[70, 350], [96, 390], [204, 340], [230, 384], [120, 410], [186, 400], [62, 400], [238, 344]].map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r={2.5} fill="#ffffff" opacity={0.25} />
+        ))}
+        {/* print: lightning bolt + stripe */}
+        <path d="M60 372 L240 372 L240 386 L60 386 Z" fill={look.accent} opacity={0.9} />
+        <path d="M206 330 L188 362 L202 362 L190 394 L222 352 L206 352 L218 330 Z" fill="#ffe14d" stroke="#1d1d24" strokeWidth={3} strokeLinejoin="round" />
+        <text x={92} y={364} textAnchor="middle" fontFamily="Nunito" fontWeight={900} fontSize={26} fill="#1d1d24">BIO</text>
+      </Hoodie>
+    );
+  }
+  // crew-neck tee with a chain
+  const c = look.shirt;
+  const s = look.shirtShade;
+  return (
+    <g>
+      <path d={TORSO} fill={c} />
+      {/* sleeve seams */}
+      <path d="M74 316 C82 344 84 380 82 420 M226 316 C218 344 216 380 218 420" stroke={s} strokeWidth={4} fill="none" opacity={0.6} />
+      <Neck look={look} />
+      {/* ribbed crew collar */}
+      <path d="M118 294 C126 318 174 318 182 294" stroke={s} strokeWidth={10} fill="none" strokeLinecap="round" />
+      {/* chain + pendant */}
+      <path d="M120 300 C122 356 178 356 180 300" stroke="#e3e7ef" strokeWidth={5} strokeDasharray="7 4" fill="none" />
+      <path d="M150 346 L160 360 L150 374 L140 360 Z" fill="#e3e7ef" stroke="#9aa0ad" strokeWidth={2} />
+      {/* small sleeve print */}
+      <circle cx={222} cy={350} r={10} fill="#ffffff" opacity={0.85} />
     </g>
   );
 };
@@ -230,7 +236,7 @@ export const Character: React.FC<Props> = ({ look, mouth, time, blinkOffset }) =
 
   return (
     <svg viewBox="0 0 300 420" width="100%" height="100%" style={{ overflow: "visible" }}>
-      <Outfit look={look} />
+      <Outfit look={look} time={time} />
       <Hair look={look} layer="back" />
       {/* ears */}
       <ellipse cx={64} cy={168} rx={14} ry={20} fill={look.skinShade} />
@@ -291,8 +297,8 @@ export const Character: React.FC<Props> = ({ look, mouth, time, blinkOffset }) =
       />
       <rect x={42} y={140} width={30} height={58} rx={13} fill="#2d2d3a" />
       <rect x={228} y={140} width={30} height={58} rx={13} fill="#2d2d3a" />
-      <rect x={48} y={148} width={10} height={42} rx={5} fill={look.shirt} />
-      <rect x={242} y={148} width={10} height={42} rx={5} fill={look.shirt} />
+      <rect x={48} y={148} width={10} height={42} rx={5} fill={look.accent} />
+      <rect x={242} y={148} width={10} height={42} rx={5} fill={look.accent} />
     </svg>
   );
 };
