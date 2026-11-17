@@ -5,7 +5,7 @@ import { CAST, ORDER, SpeakerId } from "./cast";
 import { fontFamily } from "./fonts";
 
 export const SEAT_X: Record<SpeakerId, number> = { valen: 470, max: 960, rashid: 1450 };
-export const DESK_TOP = 830;
+export const DESK_TOP = 870;
 
 export type Activity = Record<SpeakerId, number>;
 
@@ -100,9 +100,9 @@ const Seat: React.FC<{ id: SpeakerId; amount: number; mouth: number }> = ({ id, 
         style={{
           position: "absolute",
           left: x + 150,
-          top: 690,
+          top: 700,
           width: 14,
-          height: 150,
+          height: 185,
           background: "#2a2a36",
           borderRadius: 7,
           rotate: "18deg",

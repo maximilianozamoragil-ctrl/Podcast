@@ -146,7 +146,7 @@ const Captions: React.FC = () => {
         position: "absolute",
         left: 130,
         right: 130,
-        top: DESK_TOP + 70,
+        top: DESK_TOP + 44,
         height: 160,
         display: "flex",
         alignItems: "center",

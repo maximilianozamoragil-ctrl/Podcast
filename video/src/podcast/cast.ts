@@ -12,6 +12,7 @@ export const CAST: Record<SpeakerId, CharacterLook & { color: string }> = {
     skinShade: "#e6b391",
     shirt: "#ff6b6b",
     shirtShade: "#d94f55",
+    outfit: "hoodie",
     color: "#ff6b6b",
   },
   max: {
@@ -22,7 +23,8 @@ export const CAST: Record<SpeakerId, CharacterLook & { color: string }> = {
     skin: "#efc29f",
     skinShade: "#dba57f",
     shirt: "#4d96ff",
-    shirtShade: "#3473d6",
+    shirtShade: "#2a5fb8",
+    outfit: "varsity",
     color: "#4d96ff",
   },
   rashid: {
@@ -33,7 +35,8 @@ export const CAST: Record<SpeakerId, CharacterLook & { color: string }> = {
     skin: "#d9a27a",
     skinShade: "#c08860",
     shirt: "#ffb627",
-    shirtShade: "#e09612",
+    shirtShade: "#c98208",
+    outfit: "puffer",
     color: "#ffb627",
   },
 };
