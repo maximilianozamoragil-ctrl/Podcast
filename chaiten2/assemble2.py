@@ -8,7 +8,7 @@ Sound structure follows the assignment table:
   5 Transición    3 s stinger, then voice
   6 Cierre        soft closing cortina at 15 %, music up for the outro
 """
-import json, os, sys
+import json, os, subprocess, sys
 import numpy as np, soundfile as sf
 from scipy.signal import resample_poly
 
@@ -32,8 +32,15 @@ def trim(w, thr=0.012, sr=24000):
     if len(idx) == 0: return w
     return w[max(0, idx[0] - int(0.03 * sr)): min(len(w), idx[-1] + int(0.08 * sr))]
 
+TEMPO = float(os.environ.get("TEMPO", "1.18"))  # news-anchor pace, pitch preserved
+
 def load(i):
-    w, sr = sf.read(os.path.join(SRC, f"{i:03d}.wav"), dtype="float32")
+    src = os.path.join(SRC, f"{i:03d}.wav")
+    if TEMPO != 1.0:
+        dst = os.path.join(SRC, f"fast_{i:03d}.wav")
+        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", src, "-af", f"rubberband=tempo={TEMPO}:transients=smooth:formant=preserved", dst], check=True)
+        src = dst
+    w, sr = sf.read(src, dtype="float32")
     w = trim(w, sr=sr)
     rms = np.sqrt(np.mean(w[np.abs(w) > 0.02] ** 2) + 1e-9)
     w = np.clip(w * (0.12 / rms), -0.98, 0.98)
