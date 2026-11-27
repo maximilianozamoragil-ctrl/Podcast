@@ -1,0 +1,136 @@
+"""Build the final soundtrack (voices + original news music) and the Remotion timeline.
+
+Sound structure follows the assignment table:
+  1 Apertura      cortina loud 5 s, then bed at 15 % under the journalist
+  2 Contexto      bed at 10 %
+  3 Transición    3 s stinger, then voice
+  4 Entrevistas   clean voice, no music
+  5 Transición    3 s stinger, then voice
+  6 Cierre        soft closing cortina at 15 %, music up for the outro
+"""
+import json, os, subprocess, sys
+import numpy as np, soundfile as sf
+from scipy.signal import resample_poly
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import music as M  # noqa: E402
+from parse2 import parse  # noqa: E402
+
+SRC = sys.argv[1]
+HERE = os.path.dirname(os.path.abspath(__file__))
+PUB = os.path.join(HERE, "../video/public/chaiten2")
+TS = os.path.join(HERE, "../video/src/chaiten2/timeline.ts")
+SR, FPS = M.SR, 30
+INTRO, STING, OUTRO = 5.0, 3.0, 6.0
+GAP_SENT, GAP_TURN, GAP_SECTION, GAP_INTERVIEW = 0.3, 0.55, 0.9, 1.8
+
+segs = json.load(open(os.path.join(SRC, "segs.json")))
+secs = {s["id"]: s for s in parse()}
+
+def trim(w, thr=0.012, sr=24000):
+    idx = np.where(np.abs(w) > thr)[0]
+    if len(idx) == 0: return w
+    return w[max(0, idx[0] - int(0.03 * sr)): min(len(w), idx[-1] + int(0.08 * sr))]
+
+TEMPO = float(os.environ.get("TEMPO", "1.18"))  # news-anchor pace, pitch preserved
+
+def load(i):
+    src = os.path.join(SRC, f"{i:03d}.wav")
+    if TEMPO != 1.0:
+        dst = os.path.join(SRC, f"fast_{i:03d}.wav")
+        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", src, "-af", f"rubberband=tempo={TEMPO}:transients=smooth:formant=preserved", dst], check=True)
+        src = dst
+    w, sr = sf.read(src, dtype="float32")
+    w = trim(w, sr=sr)
+    rms = np.sqrt(np.mean(w[np.abs(w) > 0.02] ** 2) + 1e-9)
+    w = np.clip(w * (0.12 / rms), -0.98, 0.98)
+    return resample_poly(w, 147, 80).astype(np.float32)  # 24 kHz -> 44.1 kHz
+
+voice_parts, t = [], 0.0
+def put(x):
+    global t
+    voice_parts.append((t, x)); t += len(x) / SR
+
+sections, out_segs, cues = [], [], []
+prev = None
+for i, sg in enumerate(segs):
+    sec = secs[sg["block"]]
+    if prev is None or sg["block"] != prev["block"]:
+        if prev is not None:
+            sections[-1]["end"] = round(t, 3)
+            t += GAP_INTERVIEW if (sec["scene"] == "field" and secs[prev["block"]]["scene"] == "field") else GAP_SECTION
+        start = t
+        if prev is None:
+            cues.append({"kind": "intro", "start": 0.0, "dur": INTRO}); t += INTRO
+        if sec["scene"] == "stinger":
+            cues.append({"kind": "stinger", "start": round(t, 3), "dur": STING, "to": "field" if sec["table"] == 3 else "studio"}); t += STING
+        sections.append({"id": sec["id"], "table": sec["table"], "title": sec["title"], "scene": sec["scene"], "start": round(start, 3), "voice": round(t, 3)})
+    elif sg["spk"] != prev["spk"]:
+        t += GAP_TURN
+    else:
+        t += GAP_SENT
+    w = load(i)
+    s0 = t; put(w)
+    out_segs.append({"spk": sg["spk"], "text": sg["text"], "start": round(s0, 3), "end": round(t, 3), "block": sg["block"]})
+    prev = sg
+last_voice = t
+sections[-1]["end"] = round(t, 3)
+cues.append({"kind": "outro", "start": round(t + 0.5, 3), "dur": OUTRO})
+total = t + 0.5 + OUTRO
+
+N = int(total * SR) + 1
+voice = np.zeros(N, np.float32)
+for st, x in voice_parts:
+    i = int(st * SR); voice[i:i + len(x)] += x[: N - i]
+
+# ---------------- music ----------------
+sec_by_table = lambda tb: [s for s in sections if s["table"] == tb]
+s1, s2, s9 = sec_by_table(1)[0], sec_by_table(2)[0], sec_by_table(6)[0]
+mus = np.zeros(N, np.float32)
+def add(x, at, gain_pts):
+    """add track x at time `at` with gain automation [(time, gain), ...] (absolute times)."""
+    i = int(at * SR); x = x[: N - i]
+    tt = at + np.arange(len(x)) / SR
+    g = np.interp(tt, [p[0] for p in gain_pts], [p[1] for p in gain_pts])
+    mus[i:i + len(x)] += (x * g).astype(np.float32)
+
+PEAK = 0.55  # full-volume music peak relative to voice peaks ~0.5
+# 1 Apertura: hit + cortina loud 5 s, then 15 %; 2 Contexto: 10 %
+intro = M.intro_hit()
+add(intro, 0.0, [(0, PEAK), (INTRO - 0.6, PEAK), (INTRO + 0.4, 0.0)])
+bed_end = s2["end"] + 0.6
+bed = M.cortina(bed_end - 0.0 + 2)
+add(bed, 0.0, [(0, 0), (1.0, 0.0), (1.4, PEAK), (INTRO - 0.4, PEAK), (INTRO + 0.6, PEAK * 0.15),
+               (s1["end"], PEAK * 0.15), (s2["voice"], PEAK * 0.10), (s2["end"], PEAK * 0.10), (bed_end + 1.2, 0.0)])
+# stingers
+for c in cues:
+    if c["kind"] == "stinger":
+        add(M.stinger(), c["start"], [(c["start"], PEAK), (c["start"] + STING, PEAK)])
+# 6 Cierre: soft cortina 15 %, up for the outro
+clos = M.closing(total - s9["start"] + 1)
+add(clos, s9["start"], [(s9["start"], 0.0), (s9["start"] + 1.5, PEAK * 0.15), (last_voice, PEAK * 0.15),
+                        (last_voice + 1.2, PEAK * 0.8), (total - 2.0, PEAK * 0.8), (total, 0.0)])
+
+mix = voice + mus
+mix /= max(1.0, np.abs(mix).max() / 0.97)
+
+hop = SR // FPS
+nf = int(total * FPS) + 1
+env = np.array([np.sqrt(np.mean(voice[k * hop:(k + 1) * hop] ** 2)) if k * hop < N else 0.0 for k in range(nf)])
+env = np.clip(env / (np.percentile(env[env > 0.01], 90) + 1e-9), 0, 1)
+
+os.makedirs(PUB, exist_ok=True); os.makedirs(os.path.dirname(TS), exist_ok=True)
+sf.write(os.path.join(PUB, "noticiero.wav"), mix, SR)
+with open(TS, "w") as f:
+    f.write("// AUTO-GENERATED by chaiten2/assemble2.py\n")
+    f.write('import type { SpeakerId } from "../chaiten/cast";\n')
+    f.write("export type Seg = { spk: SpeakerId; text: string; start: number; end: number; block: number };\n")
+    f.write("export type Section = { id: number; table: number; title: string; scene: string; start: number; voice: number; end: number };\n")
+    f.write("export type Cue = { kind: string; start: number; dur: number; to?: string };\n")
+    f.write(f"export const SECTIONS: Section[] = {json.dumps(sections, ensure_ascii=False)};\n")
+    f.write(f"export const SEGS: Seg[] = {json.dumps(out_segs, ensure_ascii=False)};\n")
+    f.write(f"export const CUES: Cue[] = {json.dumps(cues)};\n")
+    f.write(f"export const ENV: number[] = {json.dumps([round(float(x), 2) for x in env])};\n")
+    f.write(f"export const DURATION = {total:.2f};\n")
+print(f"duration {total:.1f}s = {int(total // 60)}:{int(total % 60):02d}")
+for s in sections: print(s["table"], s["title"][:40], f'{int(s["start"]//60)}:{int(s["start"]%60):02d}')
