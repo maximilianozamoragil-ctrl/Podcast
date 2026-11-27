@@ -173,18 +173,13 @@ const Panel: React.FC<{ t: number }> = ({ t }) => {
     return (
       <div style={shell}>
         <div style={{ fontWeight: 900, fontSize: 26, marginBottom: 10, color }}>Presupuesto: {Math.round(grow * 100)} / 100 créditos</div>
-        <div style={{ display: "flex", height: 30, borderRadius: 8, overflow: "hidden", background: "#333", marginBottom: 10 }}>
+        <div style={{ display: "flex", height: 34, borderRadius: 8, overflow: "hidden", background: "#333", marginBottom: 4 }}>
           {BUDGET.map((x) => (
-            <div key={x.l} style={{ width: `${x.c * grow}%`, background: x.col, borderRight: "2px solid #0a0e16" }} />
+            <div key={x.l} style={{ width: `${x.c * grow}%`, background: x.col, borderRight: "2px solid #0a0e16", color: "#111", fontWeight: 900, fontSize: 17, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+              {grow > 0.9 ? x.c : ""}
+            </div>
           ))}
         </div>
-        {BUDGET.map((x) => (
-          <div key={x.l} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 19, fontWeight: 700, lineHeight: 1.35 }}>
-            <span style={{ width: 14, height: 14, borderRadius: 3, background: x.col, display: "inline-block" }} />
-            <span style={{ flex: 1 }}>{x.l}</span>
-            <span style={{ fontWeight: 900 }}>{x.c}</span>
-          </div>
-        ))}
         <div style={{ marginTop: 8, borderTop: "2px solid #444", paddingTop: 6 }}>
           {out.map((it) => (
             <div key={it.label} style={{ display: "flex", gap: 10, fontSize: 19, fontWeight: 700, lineHeight: 1.35, opacity: t >= firstMention(7, it.key) ? 1 : 0.25 }}>

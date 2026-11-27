@@ -1,7 +1,7 @@
 export type SpeakerId = "valentino" | "rashid" | "maximiliano" | "nicolas" | "rafael";
 
 export type Hair = "fringe" | "curls" | "slick" | "side" | "short";
-export type Outfit = "white-shirt" | "suit" | "firefighter" | "doctor" | "vest";
+export type Outfit = "white-shirt" | "suit" | "firefighter" | "doctor" | "vest" | "carabinero";
 
 export type Look = {
   name: string;
@@ -13,6 +13,7 @@ export type Look = {
   skin: string;
   skinShade: string;
   outfit: Outfit;
+  hat?: "carabinero";
   color: string; // UI colour
 };
 
@@ -67,14 +68,15 @@ export const CAST: Record<SpeakerId, Look> = {
   },
   rafael: {
     name: "Rafael",
-    role: "Encargado de Emergencias · Logística",
+    role: "Encargado de Emergencias y Jefe de Carabineros",
     accent: "Chile",
     hair: "short",
     hairColor: "#121110",
     hairShade: "#040404",
     skin: "#b97f57",
     skinShade: "#a06a45",
-    outfit: "vest",
+    outfit: "carabinero",
+    hat: "carabinero",
     color: "#ff9800",
   },
 };

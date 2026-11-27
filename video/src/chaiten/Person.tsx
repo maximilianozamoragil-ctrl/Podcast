@@ -104,6 +104,40 @@ const OutfitArt: React.FC<{ look: Look }> = ({ look }) => {
           <rect x={64} y={340} width={5} height={30} rx={2} fill="#2c6cd6" />
         </g>
       );
+    case "carabinero":
+      return (
+        <g>
+          {/* olive-green Carabineros uniform jacket */}
+          <path d={TORSO} fill="#4a5d3a" />
+          <Neck look={look} />
+          {/* light green shirt + dark tie */}
+          <path d="M120 290 L150 360 L180 290 Z" fill="#c9d3b0" />
+          <path d="M143 300 L157 300 L154 314 L160 356 L150 366 L140 356 L146 314 Z" fill="#2c3a24" />
+          {/* lapels */}
+          <path d="M114 290 L150 362 L130 380 L100 330 L118 318 L102 304 Z" fill="#3e5030" stroke="#33442a" strokeWidth={3} strokeLinejoin="round" />
+          <path d="M186 290 L150 362 L170 380 L200 330 L182 318 L198 304 Z" fill="#3e5030" stroke="#33442a" strokeWidth={3} strokeLinejoin="round" />
+          {/* shoulder boards with rank stars */}
+          <path d="M44 318 L96 300 L100 314 L50 334 Z" fill="#2c3a24" />
+          <path d="M256 318 L204 300 L200 314 L250 334 Z" fill="#2c3a24" />
+          {[[62, 318], [80, 311], [238, 318], [220, 311]].map(([x, y], i) => (
+            <circle key={i} cx={x} cy={y} r={4} fill="#e8c24a" />
+          ))}
+          {/* buttons */}
+          <circle cx={150} cy={392} r={5} fill="#e8c24a" />
+          <circle cx={150} cy={412} r={5} fill="#e8c24a" />
+          {/* chest badge (green & gold shield) */}
+          <path d="M198 344 L228 344 L228 366 Q213 380 198 366 Z" fill="#e8c24a" stroke="#9c7d1f" strokeWidth={2} />
+          <path d="M204 350 L222 350 L222 364 Q213 372 204 364 Z" fill="#2e6b32" />
+          {/* name plate */}
+          <rect x={74} y={350} width={46} height={12} rx={2} fill="#e8eadf" />
+          {/* hi-vis Emergencias armband */}
+          <path d="M34 384 L72 378 L74 400 L32 406 Z" fill="#ff7a1a" />
+          <path d="M33 392 L73 386 L74 391 L33 397 Z" fill="#e6eaef" />
+          {/* radio */}
+          <rect x={236} y={352} width={18} height={36} rx={4} fill="#161616" />
+          <rect x={246} y={338} width={3} height={16} fill="#161616" />
+        </g>
+      );
     case "vest":
     default:
       return (
@@ -225,6 +259,24 @@ const Hair: React.FC<{ look: Look; layer: "back" | "front" }> = ({ look, layer }
   );
 };
 
+
+const Hat: React.FC<{ look: Look }> = ({ look }) => {
+  if (look.hat !== "carabinero") return null;
+  // Carabineros service cap: olive crown, dark band, black visor, gold badge
+  return (
+    <g>
+      <path d="M50 108 C44 64 96 30 152 30 C212 30 260 62 252 108 Z" fill="#4a5d3a" />
+      <path d="M70 70 C100 44 200 44 232 70" stroke="#5c7149" strokeWidth={8} fill="none" opacity={0.7} />
+      <rect x={56} y={98} width={190} height={24} rx={6} fill="#2c3a24" />
+      <path d="M62 120 C90 146 210 146 240 120 L236 116 C206 132 96 132 66 116 Z" fill="#111" />
+      <path d="M70 120 C100 140 200 140 232 120" stroke="#333" strokeWidth={3} fill="none" />
+      <path d="M140 70 L162 70 L166 92 L151 104 L136 92 Z" fill="#e8c24a" stroke="#9c7d1f" strokeWidth={2} />
+      <circle cx={151} cy={86} r={6} fill="#2e6b32" />
+      <path d="M100 110 L202 110" stroke="#e8c24a" strokeWidth={3} />
+    </g>
+  );
+};
+
 type Props = { look: Look; mouth: number; time: number; blinkOffset: number; lookX?: number };
 
 export const Person: React.FC<Props> = ({ look, mouth, time, blinkOffset, lookX = 0 }) => {
@@ -267,6 +319,7 @@ export const Person: React.FC<Props> = ({ look, mouth, time, blinkOffset, lookX 
         </g>
       )}
       <Hair look={look} layer="front" />
+      <Hat look={look} />
     </svg>
   );
 };
